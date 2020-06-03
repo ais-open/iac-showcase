@@ -1,0 +1,7 @@
+# Terraform secrets file
+terraform.tfvars
+
+# Terraform plan, state and module files
+.pf
+terraform.tfstate*
+.terraform*

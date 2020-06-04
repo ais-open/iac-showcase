@@ -1,0 +1,212 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "vnetName": {
+        "type": "string",
+        "defaultValue": "DEMO-IaC-VNET-01",
+        "metadata": {
+        "description": "VNet name"
+        }
+      },
+      "vnetAddressPrefix": {
+        "type": "string",
+        "defaultValue": "10.0.0.0/16",
+        "metadata": {
+        "description": "Address prefix"
+        }
+      },
+      "subnet1Prefix": {
+        "type": "string",
+        "defaultValue": "10.0.1.0/24",
+        "metadata": {
+        "description": "Subnet 1 Prefix"
+        }
+      },
+      "subnet1Name": {
+        "type": "string",
+        "defaultValue": "DMZ-SUBNET",
+        "metadata": {
+        "description": "Subnet 1 Name"
+        }
+      },
+      "subnet2Prefix": {
+        "type": "string",
+        "defaultValue": "10.0.3.0/24",
+        "metadata": {
+          "description": "Subnet 2 Prefix"
+        }
+      },
+      "subnet2Name": {
+        "type": "string",
+        "defaultValue": "APP-SUBNET",
+        "metadata": {
+          "description": "Subnet 2 Name"
+        }
+      },
+      "virtualMachines_AIS_DEMO_VM_01": {
+        "defaultValue": "AIS-DEMO-VM-01",
+        "type": "String"
+        },
+      "networkInterfaces_ais_demo": {
+        "defaultValue": "ais-demo-vm-nic-01",
+        "type": "String"
+        },
+      "networkSecurityGroups_AIS_DEMO": {
+        "defaultValue": "AIS-DEMO-VM-01-nsg",
+        "type": "String"
+        },
+      "disks_AIS_DEMO_VM_01_disk1": {
+        "defaultValue": "/subscriptions/da481317-7c14-4e36-88ce-3a3c3f36f9d1/resourceGroups/JOHNNY-LAB-RGP/providers/Microsoft.Compute/disks/AIS-DEMO-VM-01_disk1_5b61d9cd7b104d1ea9fbf9de023373aa",
+            "type": "String"
+        },
+      "location": {
+        "type": "string",
+        "defaultValue": "[resourceGroup().location]",
+        "metadata": {
+        "description": "Location for all resources."
+        }
+      }
+    },
+    "variables": {},
+    "resources": [
+              {
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2020-04-01",
+            "name": "[parameters('networkInterfaces_ais_demo')]",
+            "location": "eastus2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnet2Name'))]",
+                "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_AIS_DEMO'))]"
+            ],
+            "properties": {
+                "ipConfigurations": [
+                    {
+                        "name": "ipconfig1",
+                        "properties": {
+                            "privateIPAddress": "10.1.0.4",
+                            "privateIPAllocationMethod": "Dynamic",
+                            "subnet": {
+                                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnet2Name'))]"
+                            },
+                            "primary": true,
+                            "privateIPAddressVersion": "IPv4"
+                        }
+                    }
+                ],
+                "dnsSettings": {
+                    "dnsServers": []
+                },
+                "enableAcceleratedNetworking": false,
+                "enableIPForwarding": false,
+                "networkSecurityGroup": {
+                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSecurityGroups_AIS_DEMO'))]"
+                }
+            }
+        },
+            {
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2019-07-01",
+            "name": "[parameters('virtualMachines_AIS_DEMO_VM_01')]",
+            "location": "eastus2",
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_ais_demo'))]"
+            ],
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "Standard_DS1_v2"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "MicrosoftWindowsServer",
+                        "offer": "WindowsServer",
+                        "sku": "2016-Datacenter",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                        "osType": "Windows",
+                        "name": "[concat(parameters('virtualMachines_AIS_DEMO_VM_01'), '_disk1_5b61d9cd7b104d1ea9fbf9de023373aa')]",
+                        "createOption": "FromImage",
+                        "caching": "ReadWrite",
+                        "managedDisk": {
+                        }
+                    },
+                    "dataDisks": []
+                },
+                "osProfile": {
+                    "computerName": "[parameters('virtualMachines_AIS_DEMO_VM_01')]",
+                    "adminUsername": "AzureAdmin",
+                    "adminPassword": "!Welcome2019!",
+                    "windowsConfiguration": {
+                        "provisionVMAgent": true,
+                        "enableAutomaticUpdates": true
+                    },
+                    "secrets": [],
+                    "allowExtensionOperations": true,
+                },
+                "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                            "id": "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaces_ais_demo'))]"
+                        }
+                    ]
+                },
+                "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": true,
+                        "storageUri": "https://johnnylabrgpdiag.blob.core.windows.net/"
+                    }
+                }
+            }
+        },
+      {
+       "type": "Microsoft.Network/networkSecurityGroups",
+       "apiVersion": "2020-04-01",
+       "name": "[parameters('networkSecurityGroups_AIS_DEMO')]",
+       "location": "eastus2",
+       "properties": {
+             "securityRules": []
+            }
+        },
+      {
+        "apiVersion": "2018-10-01",
+        "type": "Microsoft.Network/virtualNetworks",
+        "name": "[parameters('vnetName')]",
+        "location": "[parameters('location')]",
+        "properties": {
+          "addressSpace": {
+            "addressPrefixes": [
+              "[parameters('vnetAddressPrefix')]"
+            ]
+          }
+        },
+        "resources": [
+          {
+            "apiVersion": "2018-10-01",
+            "type": "subnets",
+            "location": "[parameters('location')]",
+            "name": "[parameters('subnet1Name')]",
+            "dependsOn": [
+              "[parameters('vnetName')]"
+            ],
+            "properties": {
+              "addressPrefix": "[parameters('subnet1Prefix')]"
+            }
+          },
+          {
+            "apiVersion": "2018-10-01",
+            "type": "subnets",
+            "location": "[parameters('location')]",
+            "name": "[parameters('subnet2Name')]",
+            "dependsOn": [
+              "[parameters('vnetName')]",
+              "[parameters('subnet1Name')]"
+            ],
+            "properties": {
+              "addressPrefix": "[parameters('subnet2Prefix')]"
+            }
+          }
+        ]
+      }
+    ]
+  }

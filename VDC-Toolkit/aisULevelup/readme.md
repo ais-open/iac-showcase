@@ -9,11 +9,53 @@ aisU Levelup environment has following Azure resources deployed VNET, Storage Ac
 
 ## Prepare your environment for deployment
 
-### Start here
+### Clone the repository
 
-**Follow the steps listed [Shared Services](https://github.com/Azure/vdc/tree/master/Environments/SharedServices) deployment until [Pre-req script](https://github.com/Azure/vdc/tree/master/Environments/SharedServices#pre-req-script) to prepare the environment to deploy VDC for aisU Levelup.**
+These steps assume that the `git` command is on your path.
 
-### Create new Environment - aisULevelUp
+1. Open a terminal window
+2. Navigate to a folder where you want to store the source for the toolkit. For, e.g. `c:\git`, navigate to that folder.
+3. Run `git clone https://github.com/Azure/vdc.git`. This will clone the GitHub repository in a folder named `vdc`.
+4. Run `cd vdc` to change directory in the source folder.
+5. Run `git checkout master` to switch to the branch with the current in-development version of the toolkit.
+
+### Build the Docker image
+
+1. Ensure that the [Docker daemon](https://docs.docker.com/config/daemon/) is running. If you are new to Docker, the easiest way to do this is to install [Docker Desktop](https://www.docker.com/products/docker-desktop).
+1. Open a terminal window
+1. Navigate to the folder where you cloned the repository. _The rest of the quickstart assumes that this path is `C:\git\vdc\`_
+1. Run `docker build . -t vdc:latest` to build the image.
+
+### Run the toolkit container
+
+After the image finishing building, you can run it using:
+
+`docker run -it --entrypoint="pwsh" --rm -v C:\git\vdc\Config:/usr/src/app/Config -v C:\git\vdc\Environments:/usr/src/app/Environments -v C:\git\vdc\Modules:/usr/src/app/Modules vdc:latest`
+
+A few things to note:
+
+- You don't need to build the image every time you want to run the container. You'll only need to rebuild it if there are changes to the source (primarily changes in the `Orchestration` folder).
+- The `docker run` command above will map volumes in the container to volumes on the host machine. This will allow you to directly modify files in these directories (`Config`,`Environments`, and `Modules`).
+
+When the container starts, you will see the prompt
+`PS /usr/src/app>`
+
+## Configure the toolkit
+
+To configure the toolkit for this quickstart, we will need to collect the following information.
+
+You'll need:
+
+- A subscription for the toolkit to use for logging and tracking deployment.
+- The associated tenant id of the Azure Active Directory associated with those subscriptions.
+- The object id of the user account that you'll use to run the deployment.
+- The object id of a [service principal](https://docs.microsoft.com/azure/
+- An organization name for generating a prefix for naming resources.
+- The desired password of the Windows jumpbox.
+
+Note: You can use a single subscription. You'll just need to provide the same subscription id in multiple locations in the configuration.
+
+## Create new Environment - aisULevelUp
 
 Copy the folder [aisULevelUp](.) to downloaded VDC toolkit project in Environments folder
 
@@ -62,7 +104,12 @@ Any application specific parameters updates should be done in the [parameters.js
 
 1. Return to the running Docker container from earlier in the quickstart.
 1. If you have not already done so, run `Connect-AzAccount -Tenant "[TENANT_ID]" -SubscriptionId "[SUBSCRIPTION_ID]" -EnvironmentName "[AZURE_ENVIRONMENT]"` to login and set an Azure context.
-1. To deploy the entire aisU Levelup environment, you can run a single command:
+2. Run the script to update config files with tenant & subscription id's
+   
+   ```Powershell
+   ./Orchestration/OrchestrationService/Pre_req_script.ps1
+   ```
+3. To deploy the entire aisU Levelup environment, you can run a single command:
 
     ``` PowerShell
     ./Orchestration/OrchestrationService/ModuleConfigurationDeployment.ps1 -DefinitionPath ./Environments/aisULevelup/definition.json

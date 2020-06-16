@@ -1,0 +1,6 @@
+name: demo
+runtime:
+  name: python
+  options:
+    virtualenv: venv
+description: Demonstrate basic VM deploment

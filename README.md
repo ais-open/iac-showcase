@@ -9,5 +9,5 @@ Demo repo for Infrastructure as Code presentation
 ## IaC tools
 
 * Johnny: ARM / Powershell
-* Selvi: VDC Toolkit / Blueprints
+* Selvi: VDC Toolkit / Az Blueprints/ Az Cli
 * Jonathan: Terraform / Pulumi

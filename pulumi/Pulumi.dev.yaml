@@ -1,0 +1,6 @@
+encryptionsalt: v1:lZGQCbGr16I=:v1:W4syT0x1r1u/p0n5:3H31MfEtm4xzKvSszLgC9uF/iiyvdA==
+config:
+  azure:environment: public
+  azure:location: EastUS
+  pulumi-demo:password:
+    secure: v1:Cw7bDUoun2Q8YKiZ:2sKSu0R7CHn73jXUwQId0dj0pFnNNsO2KoiMPVt9SnNq9pNBTEuQkmHWzw==

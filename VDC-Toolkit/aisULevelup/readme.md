@@ -162,9 +162,9 @@ az account set --subscription [SUBSCRIPTION_ID]
 az storage container legal-hold clear --resource-group vdc-toolkit-rg --account-name [STORAGE_ACCOUNT_NAME] --container-name deployments --tags audit
 
 az storage container legal-hold clear --resource-group vdc-toolkit-rg --account-name [STORAGE_ACCOUNT_NAME] --container-name audit --tags audit
-```
 
 az group delete -n vdc-toolkit-rg
+```
 
 ### **Remove KeyVault**
 
